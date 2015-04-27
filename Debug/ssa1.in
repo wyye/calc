@@ -1,0 +1,14 @@
+function main()
+{
+	a = 1.0;
+	a = 2.0;
+	b = a++;
+	
+	a = a = ! (e = a);
+	c = (a + (c = 3.0));
+	a = b = c;
+	b = 2.3;
+	a = 2.0 + b / a;
+	a = e + (c = c) - (a = a);
+	result = 1.0;
+}

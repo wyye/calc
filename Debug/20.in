@@ -1,0 +1,16 @@
+function f (b)
+{
+  result = b*2.0;
+  b = 1.0;
+}
+
+function main()
+{
+a = 123.0;
+while (f(a) > 0.0)
+{
+  a = a - 20.0;
+}
+
+result = a;
+}

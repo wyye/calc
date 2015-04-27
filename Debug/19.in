@@ -1,0 +1,14 @@
+function a(b, c, d, e)
+{
+	result = f(b, c, d) * e;
+}
+
+function f(g, h, i)
+{
+	result = g + h + i;
+}
+
+function main() 
+{
+result = a(1.0, 2.0, 3.0, 4.0) != 24.0 ? a(1.0, 0.0, 0.0, 1.0) : a(1.0, 0.0, 0.0, 2.0);
+}

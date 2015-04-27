@@ -1,0 +1,16 @@
+u_a_0 = 0;
+u_b_0 = 3;
+if ( u_a_0 ) {
+u_b_1 = u_b_0;
+u_b_2 = u_b_1;
+t_0 = u_b_2;
+} else {
+u_b_3 = u_b_0;
+u_b_4 = u_b_3;
+u_b_5 = u_b_4;
+t_1 = u_b_5;
+}
+u_b_6 = phi (u_b_2, u_b_5);
+t_2 = phi (t_0, t_1);
+u_a_1 = t_2;
+u_result_0 = u_b_6;

@@ -1,0 +1,6 @@
+function main() {
+a = 0.0;
+b = 10.0; while ( a++ < --b)
+
+
+{  result = a + b; }}

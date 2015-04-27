@@ -1,0 +1,9 @@
+function main()
+{
+	a = 1.0;
+	b = a + 2.5;
+	a = b - a;
+	b = b + a;
+	a = a + 1.0;
+	result = a;
+}

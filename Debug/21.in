@@ -1,0 +1,10 @@
+function f()
+{
+	result = 2.0;
+	a = 1.0;
+}
+
+function main()
+{
+	result = f();
+}

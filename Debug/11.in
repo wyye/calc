@@ -1,0 +1,9 @@
+function main() {
+abc = 2.5;
+k = 4.0;
+while (abc >= 0.0) 
+{
+	abc--;
+	k = k + 0.2;
+}
+result = k; }

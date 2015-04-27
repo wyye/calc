@@ -1,0 +1,8 @@
+function main()
+{
+	a = 20;
+	while (a > 10) {
+		a--;
+	}
+	result = a;
+}

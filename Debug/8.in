@@ -1,0 +1,7 @@
+function main()
+{
+a = 8.0/2.0;
+b = (a<2.0)?a++:a--;
+c = a++ + b++;
+result = --c+((a<b)?a+b:a-b);
+}

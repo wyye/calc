@@ -1,0 +1,8 @@
+
+ function factorial(n) { 
+result = (n == 1.0) ? 1.0 : factorial(n-1.0) * n; 
+}
+
+function main() {
+result = factorial(50.0);
+}

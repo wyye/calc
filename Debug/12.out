@@ -1,0 +1,13 @@
+a = 0
+b = 5
+result = 1
+result = 2
+a = 1
+result = 4
+a = 2
+result = 8
+a = 3
+result = 16
+a = 4
+result = 32
+a = 5

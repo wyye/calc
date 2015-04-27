@@ -1,0 +1,7 @@
+function main()
+{
+	a = 0;
+	b = 3;
+	a = a ? (b = b = b) : (b = b = b = b);
+	result = b;
+}

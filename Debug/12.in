@@ -1,0 +1,15 @@
+function main(){
+
+
+a = 0.0;
+b = 5.0;
+
+
+result = 1.0;
+while
+(  a < b){  result = 2.0 * result;
+
+
+	a++;
+
+}}

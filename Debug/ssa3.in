@@ -1,0 +1,5 @@
+function main()
+{
+	a = b = c = d = e = f = c = h = i = y = 1;
+	y = a ? ( b ? ( c = d ) : e ) : ( f ? ( c = h ) : i );
+}

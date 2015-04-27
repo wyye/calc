@@ -1,0 +1,6 @@
+function main()
+{
+a = 123.0;
+b777b = a / 6.0 * ( 1.0 + a );
+result = - b777b;
+}

@@ -1,0 +1,21 @@
+function main() {
+
+
+i = 0.0;
+a = 0.0;
+while (i < 5.0) { 
+	j = 0.0;
+	while (j < 3.0)
+	{
+		k = 0.0;
+	
+		while (k < 20.0)
+		{
+			a++;
+			k++;
+		}
+		j++;
+	}
+	i++;
+}
+result = a;}

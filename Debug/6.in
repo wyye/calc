@@ -1,0 +1,7 @@
+function main()
+{
+sd = 21.0;
+uu = 1.0;
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa = - 0.0 + 1.0 ? uu++ / --sd : sd++ ;
+result = ++aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa;
+}

@@ -1,0 +1,8 @@
+function foo (a, b, c)
+{
+  result = a + b*c;
+}
+
+function main() {
+a = 3.0;
+result = foo (1.0, a, 2.0);}
