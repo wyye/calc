@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include "HelpTools.h"
 
 class ISSANode;
 
@@ -35,7 +36,8 @@ public:
 	void make_unary(int op, ISSANode* left, ISSANode* right);
 	void make_binary(int op, ISSANode* left, ISSANode* right1, ISSANode* right2);
 	void make_assign(ISSANode* left, ISSANode* right);
-	void make_ternary(ISSANode* condition, SSAList* ternary_true, SSAList* ternary_false);
+	void make_ternary(int, ISSANode* condition, SSAList* ternary_true, SSAList* ternary_false);
+	void make_if(ISSANode* condition, SSAList* ternary_true, SSAList* ternary_false);
 	void print();
 	void make_ssa(std::map<std::string, int>&, std::map<std::string, int>&);
 	void add_front(ISSANode* front);
@@ -46,6 +48,7 @@ class ISSANode
 public:
 	enum operation {
 		UNKNOWN,
+		IF,
 		ASSIGN, TERNARY, EQUALITY, NEQUALITY,
 		GREATER, GREATER_EQUAL, LESS, LESS_EQUAL,
 		ADD, SUB, MUL, DIV, UNARY_MINUS, NOT,
@@ -80,11 +83,10 @@ public:
 	void print()
 	{
 		int op = get_op();
-		if (op == ISSANode::UNARY_MINUS) printf("- ");
-		else if (op == ISSANode::NOT) printf("! ");
+		if (op == ISSANode::UNARY_MINUS) std::cout << "- ";
+		else if (op == ISSANode::NOT) std::cout << "! ";
 		else {
-			printf("SSAUnaryOpNode::print : unknown operation\n");
-			exit(-1);
+			calc_unreachable("Unknown operation");
 		}
 		m_child->print();
 	}
@@ -133,8 +135,7 @@ public:
 		else if (op == ISSANode::MUL) std::cout << " * ";
 		else if (op == ISSANode::DIV) std::cout << " / ";
 		else {
-			std::cout << "SSABinaryOpNode::print : unknown operation\n";
-			exit(-1);
+			calc_unreachable("Unknown operation");
 		}
 		get(1)->print();
 	}
@@ -225,7 +226,7 @@ public:
 	SSAList* get_false() const { return m_false; }
 	void print()
 	{
-		printf("if ( ");
+		std::cout << "if ( ";
 		get_cond()->print();
 		std::cout << " ) {\n";
 		get_true()->print();
@@ -256,7 +257,7 @@ public:
 		std::vector<ISSANode*>::iterator it;
 		std::cout << "phi (";
 		it = m_vars.begin();
-		if (it == m_vars.end()) return;
+		if (m_vars.empty()) return;
 		(*it)->print();
 		++it;
 		while (it != m_vars.end()) {

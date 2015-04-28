@@ -13,12 +13,14 @@
 #include "Interpreter.h"
 #include "SSA.h"
 
+#include "HelpTools.h"
+
 static const int max_str_size = 256;
 
 enum operation {
-		UNKNOWN,
+		UNKNOWN, EMPTY,
 		FUNC_CALL,
-		STATEMENTS, WHILE_CYCLE,
+		STATEMENTS, WHILE_CYCLE, IF,
 		ASSIGN, TERNARY, EQUALITY, NEQUALITY,
 		GREATER, GREATER_EQUAL, LESS, LESS_EQUAL,
 		ADD, SUB, MUL, DIV, UNARY_MINUS, NOT,
@@ -41,6 +43,20 @@ public:
 	virtual void run(InterpreterState&, ExecutionState&) = 0;
 	virtual ISSANode* make_ssa(SSAList& ssa) = 0;
 	virtual void print(int semicolon = 1) = 0;
+};
+
+class ASTEmptyNode : public IASTNode
+{
+public:
+	ASTEmptyNode() : IASTNode(EMPTY) {}
+	~ASTEmptyNode() {}
+	void run(InterpreterState&, ExecutionState&);
+	ISSANode* make_ssa(SSAList&)
+	{
+		//calc_unreachable("trying to convert empty node to ssa");
+		return NULL;
+	}
+	void print(int) {};
 };
 
 class ASTUnaryOpNode : public IASTNode
@@ -67,15 +83,14 @@ public:
 	virtual void print(int semicolon)
 	{
 		int op = get_op();
-		if (op == UNARY_MINUS) printf("(-");
-		else if (op == NOT) printf("(!");
+		if (op == UNARY_MINUS) std::cout << "(-";
+		else if (op == NOT) std::cout << "(!";
 		else {
-			printf("ASTUnaryOpNode::print : Unknown operation\n");
-			exit(-1);
+			calc_unreachable("Unknown operation");
 		}
 		get()->print(0);
-		printf(")");
-		if (semicolon) printf(";\n");
+		std::cout << ")";
+		if (semicolon) std::cout << ";\n";
 	}
 };
 
@@ -123,8 +138,7 @@ public:
 		else if (get_op() == MUL) op = ISSANode::MUL;
 		else if (get_op() == DIV) op = ISSANode::DIV;
 		else {
-			printf("ASTBinaryOpNode::make_ssa : Unknown operation\n");
-			exit(-1);
+			calc_unreachable("Unknown operation");
 		}
 		ssa.make_binary(op, left, right1, right2);
 		return ssa.make_var(left_name);
@@ -132,26 +146,25 @@ public:
 	virtual void print(int semicolon)
 	{
 		int op = get_op();
-		printf("(");
+		std::cout << "(";
 		get(0)->print(0);
-		if (op == ASSIGN) printf("=");
-		else if (op == EQUALITY) printf("==");
-		else if (op == NEQUALITY) printf("!=");
-		else if (op == GREATER) printf(">");
-		else if (op == GREATER_EQUAL) printf(">=");
-		else if (op == LESS) printf("<");
-		else if (op == LESS_EQUAL) printf("<=");
-		else if (op == ADD) printf("+");
-		else if (op == SUB) printf("-");
-		else if (op == MUL) printf("*");
-		else if (op == DIV) printf("/");
+		if (op == ASSIGN) std::cout << "=";
+		else if (op == EQUALITY) std::cout << "==";
+		else if (op == NEQUALITY) std::cout << "!=";
+		else if (op == GREATER) std::cout << ">";
+		else if (op == GREATER_EQUAL) std::cout << ">=";
+		else if (op == LESS) std::cout << "<";
+		else if (op == LESS_EQUAL) std::cout << "<=";
+		else if (op == ADD) std::cout << "+";
+		else if (op == SUB) std::cout << "-";
+		else if (op == MUL) std::cout << "*";
+		else if (op == DIV) std::cout << "/";
 		else {
-			printf("ASTBinaryOpNode::print : Unknown operation\n");
-			exit(-1);
+			calc_unreachable("Unknown operation");
 		}
 		get(1)->print(0);
-		printf(")");
-		if (semicolon) printf(";\n");
+		std::cout << ")";
+		if (semicolon) std::cout << ";\n";
 	}
 };
 
@@ -187,7 +200,7 @@ public:
 		ISSANode* left2 = ssa.make_var(left2_name);
 		ssa1->make_assign(left1, tern_true);
 		ssa2->make_assign(left2, tern_false);
-		ssa.make_ternary(condition, ssa1, ssa2);
+		ssa.make_ternary(ISSANode::TERNARY, condition, ssa1, ssa2);
 		SSAPhiNode* phi = new SSAPhiNode;
 		phi->set(ssa.make_var(left1_name));
 		phi->set(ssa.make_var(left2_name));
@@ -200,17 +213,16 @@ public:
 	{
 		int op = get_op();
 		if (op != TERNARY) {
-			printf("ASTTernaryOpNode::print : Unknown operation\n");
-			exit(-1);
+			calc_unreachable("Unknown operation");
 		}
-		printf("(");
+		std::cout << "(";
 		get(0)->print(0);
-		printf(")?(");
+		std::cout << ")?(";
 		get(1)->print(0);
-		printf("):(");
+		std::cout << "):(";
 		get(2)->print(0);
-		printf(")");
-		if (semicolon) printf(";\n");
+		std::cout << ")";
+		if (semicolon) std::cout << ";\n";
 	}
 };
 
@@ -242,8 +254,7 @@ public:
 			return;
 		}
 
-		printf("AbstractSyntaxTree : ASTLeafVar : Wrong cmd_state\n");
-		exit(-1);
+		calc_unreachable("Wrong cmd_state");
 	}
 	ISSANode* make_ssa(SSAList& ssa)
 	{
@@ -257,11 +268,10 @@ public:
 	{
 		int op = get_op();
 		if (op != VARIABLE) {
-			printf("ASTLeafVar::print : Unknown operation\n");
-			exit(-1);
+			calc_unreachable("Unknown operation");
 		}
-		printf("%s", m_name.c_str());
-		if (semicolon) printf(";\n");
+		std::cout << m_name;
+		if (semicolon) std::cout << ";\n";
 	}
 };
 
@@ -301,22 +311,21 @@ public:
 			ssa.make_binary(ISSANode::SUB, b_left, b_right1, b_right2);
 			return ssa.make_var(left_name);
 		} else {
-			printf("ASTIncrOpNode::make_ssa : Unknown operation\n");
-			exit(-1);
+			calc_unreachable("Unknown operation\n");
 			return NULL;
 		}
 	}
 	virtual void print(int semicolon)
 	{
 		int op = get_op();
-		printf("(");
-		if (op == PRE_INC) printf("++");
-		if (op == PRE_DEC) printf("--");
+		std::cout << "(";
+		if (op == PRE_INC) std::cout << "++";
+		if (op == PRE_DEC) std::cout << "--";
 		get()->print(0);
-		if (op == POST_INC) printf("++");
-		if (op == POST_DEC) printf("--");
-		printf(")");
-		if (semicolon) printf(";\n");
+		if (op == POST_INC) std::cout << "++";
+		if (op == POST_DEC) std::cout << "--";
+		std::cout << ")";
+		if (semicolon) std::cout << ";\n";
 	}
 };
 
@@ -341,8 +350,7 @@ public:
 			return;
 		}
 
-		printf("AbstractSyntaxTree : ASTLeafNum : Wrong cmd_state\n");
-		exit(-1);
+		calc_unreachable("Wrong cmd_state");
 	}
 	ISSANode* make_ssa(SSAList& ssa)
 	{
@@ -352,11 +360,11 @@ public:
 	{
 		int op = get_op();
 		if (op != NUMBER) {
-			printf("ASTLeafNum::print : Unknown operation\n");
+			calc_unreachable("Unknown operation");
 			exit(-1);
 		}
-		printf("%lg", m_value);
-		if (semicolon) printf(";\n");
+		std::cout << m_value;
+		if (semicolon) std::cout << ";\n";
 	}
 };
 
@@ -370,43 +378,67 @@ public:
 	{
 		int op = get_op();
 		if (op == WHILE_CYCLE) {
-			printf("make_ssa is not working for while cycle\n");
-			exit(-1);
+			calc_unreachable("make_ssa is not working for while cycle");
 		} else if (op == STATEMENTS) {
 			delete get(0)->make_ssa(ssa);
 			delete get(1)->make_ssa(ssa);
 		} else {
-			printf("ASTNoRetBinaryOpNode::make_ssa : Unknown operation\n");
-			exit(-1);
+			calc_unreachable("Unknown operation");
 		}
 		return NULL;
 	}
-	virtual void print(int semicolon)
+	void print(int semicolon)
 	{
 		int op = get_op();
 		if (op == WHILE_CYCLE) {
-			printf("while(");
+			std::cout << "while(";
 			get(0)->print(0);
-			printf(")\n{\n");
+			std::cout << ")\n{\n";
 			get(1)->print(1);
-			printf("}\n");
+			std::cout << "}\n";
 		} else if (op == STATEMENTS) {
 			get(0)->print(1);
 			get(1)->print(1);
 		} else {
-			printf("ASTNoRetBinaryOpNode::print : Unknown operation\n");
-			exit(-1);
+			calc_unreachable("Unknown operation");
 		}
+	}
+};
+
+class ASTNoRetTernaryOpNode : public ASTTernaryOpNode
+{
+public:
+	ASTNoRetTernaryOpNode(int operation) : ASTTernaryOpNode(operation) {}
+	~ASTNoRetTernaryOpNode() {}
+	void run(InterpreterState&, ExecutionState&);
+	ISSANode* make_ssa(SSAList& ssa)
+	{
+		int op = get_op();
+		if (op == IF) {
+			ISSANode* condition = get(0)->make_ssa(ssa);
+			SSAList* ssa1 = new SSAList;
+			SSAList* ssa2 = new SSAList;
+			delete get(1)->make_ssa(*ssa1);
+			delete get(2)->make_ssa(*ssa2);
+			ssa.make_ternary(ISSANode::IF, condition, ssa1, ssa2);
+		} else {
+			calc_unreachable("Unknown operation");
+		}
+		return NULL;
+	}
+	void print(int semicolon)
+	{
+		// TODO
+		calc_unreachable("Not implemented");
 	}
 };
 
 class ASTFuncCallNode : public IASTNode
 {
 	std::string m_name;
-	int m_args_num;
 	std::vector<IASTNode*> m_child_args;
 public:
-	ASTFuncCallNode(std::string name) : IASTNode(FUNC_CALL), m_name(name), m_args_num(0)
+	ASTFuncCallNode(std::string name) : IASTNode(FUNC_CALL), m_name(name)
 	{}
 	IASTNode* get_args(int num)
 	{
@@ -414,31 +446,29 @@ public:
 	}
 	void set_args(IASTNode* arg) {
 		m_child_args.push_back(arg);
-		++m_args_num;
 	}
 	~ASTFuncCallNode()
 	{
-		for (int i = 0; i < m_args_num; i++)
-			if (m_child_args[i] != NULL) delete m_child_args[i];
+		std::vector<IASTNode*>::iterator it;
+		for (it = m_child_args.begin(); it != m_child_args.end(); ++it)
+			if (*it != NULL) delete *it;
 	}
 	void run(InterpreterState&, ExecutionState&);
 	ISSANode* make_ssa(SSAList& ssa)
 	{
-		printf("make_ssa is not working for func calls\n");
-		exit(-1);
+		calc_unreachable("make_ssa is not working for func calls");
 		return NULL;
 	}
 	virtual void print(int semicolon)
 	{
 		int op = get_op();
 		if (op != FUNC_CALL) {
-			printf("ASTFuncCallNode::print : Unknown operation\n");
-			exit(-1);
+			calc_unreachable("Unknown operation");
 		}
 		std::cout << m_name << "(";
-		if (m_args_num != 0)
+		if (!m_child_args.empty())
 			m_child_args[0]->print(0);
-		for (int i = 1; i < m_args_num; i++) {
+		for (unsigned int i = 1; i < m_child_args.size(); i++) {
 			std::cout << ", ";
 			m_child_args[i]->print(0);
 		}

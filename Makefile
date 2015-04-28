@@ -1,6 +1,6 @@
 CXXFLAGS = -g -Wall
 
-objects = Interpreter.o AbstractSyntaxTree.o ParserFunc.o HashTable.o ParserDriver.o SSA.o CalcParser.o CalcScanner.o
+objects = HelpTools.o Interpreter.o AbstractSyntaxTree.o ParserFunc.o HashTable.o ParserDriver.o SSA.o CalcParser.o CalcScanner.o
 
 .PHONY: all 
 all: calc
@@ -24,6 +24,8 @@ HashTable.o: HashTable.h HashTable.cpp
 ParserDriver.o: ParserDriver.h ParserDriver.cpp CalcParser.o
 
 SSA.o: SSA.h SSA.cpp
+
+HelpTools.o: HelpTools.h HelpTools.cpp
 
 calc: $(objects) main.cpp
 	$(CXX) $(CXXFLAGS) $(objects) main.cpp -o calc

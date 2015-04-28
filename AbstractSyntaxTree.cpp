@@ -4,6 +4,8 @@
 #include <cfloat>
 #include <cmath>
 
+#include "HelpTools.h"
+
 int double_equal(double a, double b)
 {
 	if (fabs(a - b) < DBL_EPSILON) return 1;
@@ -37,8 +39,7 @@ void ASTUnaryOpNode::run(InterpreterState& int_st, ExecutionState& exec_st)
 			else int_st.data_stack.push(0.0);
 			break;
 		default:
-			printf("AbstractSyntaxTree : ASTUnaryOpNode : operation code is not allowed %d\n", op);
-			exit(-1);
+			calc_unreachable("Operation code is not allowed");
 		}
 		exec_st.cmd_state = int_st.op_stack.top();
 		int_st.op_stack.pop();
@@ -47,8 +48,7 @@ void ASTUnaryOpNode::run(InterpreterState& int_st, ExecutionState& exec_st)
 		return;
 	}
 
-	printf("AbstractSyntaxTree : ASTUnaryOpNode : Wrong cmd_state\n");
-	exit(-1);
+	calc_unreachable("Wrong cmd_state");
 }
 
 void ASTIncrOpNode::run(InterpreterState& int_st, ExecutionState& exec_st)
@@ -64,25 +64,24 @@ void ASTIncrOpNode::run(InterpreterState& int_st, ExecutionState& exec_st)
 		{
 		case POST_INC:
 			exec_st.variables->put(var_name, val + 1.0);
-			printf("%s = %lg\n", var_name, val + 1.0);
+			std::cout << var_name << " = " << val + 1.0 << "\n";
 			break;
 		case PRE_INC:
 			val += 1.0;
 			exec_st.variables->put(var_name, val);
-			printf("%s = %lg\n", var_name, val);
+			std::cout << var_name << " = " << val << "\n";
 			break;
 		case POST_DEC:
 			exec_st.variables->put(var_name, val - 1.0);
-			printf("%s = %lg\n", var_name, val - 1.0);
+			std::cout << var_name << " = " << val - 1.0 << "\n";
 			break;
 		case PRE_DEC:
 			val -= 1.0;
 			exec_st.variables->put(var_name, val);
-			printf("%s = %lg\n", var_name, val);
+			std::cout << var_name << " = " << val << "\n";
 			break;
 		default:
-			printf("AbstractSyntaxTree : ASTIncrOpNode : operation code is not allowed %d\n", op);
-			exit(-1);
+			calc_unreachable("Operation code is not allowed");
 		}
 		int_st.data_stack.push(val);
 		exec_st.cmd_state = int_st.op_stack.top();
@@ -92,8 +91,7 @@ void ASTIncrOpNode::run(InterpreterState& int_st, ExecutionState& exec_st)
 		return;
 	}
 
-	printf("AbstractSyntaxTree : ASTIncrOpNode : Wrong cmd_state\n");
-	exit(-1);
+	calc_unreachable("Wrong cmd_state");
 }
 
 void ASTBinaryOpNode::run(InterpreterState& int_st, ExecutionState& exec_st)
@@ -117,7 +115,7 @@ void ASTBinaryOpNode::run(InterpreterState& int_st, ExecutionState& exec_st)
 			ASTLeafVar* leafvar = dynamic_cast<ASTLeafVar*> (get(0));
 			leafvar->get(var_name, max_str_size);
 			exec_st.variables->put(var_name, int_st.data_stack.top());
-			printf("%s = %lg\n", var_name, int_st.data_stack.top());
+			std::cout << var_name << " = " << int_st.data_stack.top() << "\n";
 			exec_st.cmd_state = int_st.op_stack.top();
 			int_st.op_stack.pop();
 			exec_st.command = int_st.command_stack.top();
@@ -176,13 +174,12 @@ void ASTBinaryOpNode::run(InterpreterState& int_st, ExecutionState& exec_st)
 			break;
 		case DIV:
 			if (double_equal(right, 0.0)) {
-				printf("AbstractSyntaxTree : ASTBinaryOpNode : Division by zero\n");
-				exit(-1);
+				calc_unreachable("Division by zero");
 			}
 			int_st.data_stack.push(left / right);
 			break;
 		default:
-			printf("AbstractSyntaxTree : ASTBinaryOpNode : operation code is not allowed %d\n", op);
+			calc_unreachable("Operation code is not allowed");
 			exit(-1);
 		}
 		exec_st.cmd_state = int_st.op_stack.top();
@@ -192,8 +189,7 @@ void ASTBinaryOpNode::run(InterpreterState& int_st, ExecutionState& exec_st)
 		return;
 	}
 
-	printf("AbstractSyntaxTree : ASTBinaryOpNode : Wrong cmd_state\n");
-	exit(-1);
+	calc_unreachable("Wrong cmd_state");
 }
 
 void ASTTernaryOpNode::run(InterpreterState& int_st, ExecutionState& exec_st)
@@ -225,8 +221,7 @@ void ASTTernaryOpNode::run(InterpreterState& int_st, ExecutionState& exec_st)
 			break;
 		}
 		default:
-			printf("AbstractSyntaxTree : ASTTernaryOpNode : operation code is not allowed %d\n", op);
-			exit(-1);
+			calc_unreachable("Operation code is not allowed");
 		}
 		return;
 	}
@@ -240,8 +235,7 @@ void ASTTernaryOpNode::run(InterpreterState& int_st, ExecutionState& exec_st)
 		return;
 	}
 
-	printf("AbstractSyntaxTree : ASTTernaryOpNode : Wrong cmd_state\n");
-	exit(-1);
+	calc_unreachable("Wrong cmd_state");
 }
 
 void ASTNoRetBinaryOpNode::run(InterpreterState& int_st, ExecutionState& exec_st)
@@ -263,7 +257,8 @@ void ASTNoRetBinaryOpNode::run(InterpreterState& int_st, ExecutionState& exec_st
 		{
 		case WHILE_CYCLE: {
 			double left = int_st.data_stack.top();
-			int_st.data_stack.pop(); // delete useless condition result
+			if (int_st.data_stack.pop()) // delete useless condition result
+				calc_unreachable("data stack is empty");
 			if (!double_equal(left, 0.0)) {
 				int_st.data_stack.pop(); // delete statements returned value from previous cycle execution
 				exec_st.cmd_state = 0; // when execute node, check condition again
@@ -280,7 +275,8 @@ void ASTNoRetBinaryOpNode::run(InterpreterState& int_st, ExecutionState& exec_st
 			return;
 		}
 		case STATEMENTS: {
-			int_st.data_stack.pop(); // drop useless result
+			if (int_st.data_stack.pop()) // drop useless result
+				calc_unreachable("data stack is empty");
 			exec_st.cmd_state++;
 			int_st.op_stack.push(exec_st.cmd_state);
 			exec_st.cmd_state = 0;
@@ -289,8 +285,7 @@ void ASTNoRetBinaryOpNode::run(InterpreterState& int_st, ExecutionState& exec_st
 			return;
 		}
 		default:
-			printf("AbstractSyntaxTree : ASTNoRetBinaryOpNode : operation code is not allowed %d\n", op);
-			exit(-1);
+			calc_unreachable("Operation code is not allowed");
 		}
 	}
 
@@ -303,8 +298,53 @@ void ASTNoRetBinaryOpNode::run(InterpreterState& int_st, ExecutionState& exec_st
 		return;
 	}
 
-	printf("AbstractSyntaxTree : ASTNoRetBinaryOpNode : Wrong cmd_state\n");
-	exit(-1);
+	calc_unreachable("Wrong cmd_state");
+}
+
+void ASTNoRetTernaryOpNode::run(InterpreterState& int_st, ExecutionState& exec_st)
+{
+	if (exec_st.cmd_state == 0) // call to child 1
+	{
+		exec_st.cmd_state++;
+		int_st.op_stack.push(exec_st.cmd_state);
+		exec_st.cmd_state = 0;
+		int_st.command_stack.push(exec_st.command);
+		exec_st.command = get(0);
+		return;
+	}
+
+	if (exec_st.cmd_state == 1) // call to child 2 or 3
+	{
+		exec_st.cmd_state++;
+		int_st.op_stack.push(exec_st.cmd_state);
+		exec_st.cmd_state = 0;
+		int_st.command_stack.push(exec_st.command);
+		int op = get_op();
+		switch(op)
+		{
+		case IF: {
+			double left = int_st.data_stack.top();
+			int_st.data_stack.pop();
+			if (double_equal(left, 0.0)) exec_st.command = get(2);
+			else exec_st.command = get(1);
+			break;
+		}
+		default:
+			calc_unreachable("Operation code is not allowed");
+		}
+		return;
+	}
+
+	if (exec_st.cmd_state == 2) // return useless result
+	{
+		exec_st.cmd_state = int_st.op_stack.top();
+		int_st.op_stack.pop();
+		exec_st.command = int_st.command_stack.top();
+		int_st.command_stack.pop();
+		return;
+	}
+
+	calc_unreachable("Wrong cmd_state");
 }
 
 void ASTFuncCallNode::run(InterpreterState& int_st, ExecutionState& exec_st)
@@ -314,12 +354,12 @@ void ASTFuncCallNode::run(InterpreterState& int_st, ExecutionState& exec_st)
 		std::cout << "ASTFuncCallNode : Function '" << m_name << "' not found in name table\n";
 		exit(-1);
 	}
-	if (f->args_num != m_args_num) {
+	if (f->arg.size() != m_child_args.size()) {
 		std::cout << "ASTFuncCallNode : Wrong number of arguments in function '" << f->name << "'\n";
 		exit(-1);
 	}
 
-	if (0 <= exec_st.cmd_state && exec_st.cmd_state < f->args_num) // call all arguments
+	if (0 <= exec_st.cmd_state && exec_st.cmd_state < f->arg.size()) // call all arguments
 	{
 		int_st.command_stack.push(exec_st.command);
 		exec_st.command = m_child_args[exec_st.cmd_state]; // calculate func arguments
@@ -329,7 +369,7 @@ void ASTFuncCallNode::run(InterpreterState& int_st, ExecutionState& exec_st)
 		return;
 	}
 
-	if (exec_st.cmd_state == f->args_num) // func call
+	if (exec_st.cmd_state == f->arg.size()) // func call
 	{
 		if (f->name == "main") {
 			exec_st.cmd_state++;
@@ -350,7 +390,7 @@ void ASTFuncCallNode::run(InterpreterState& int_st, ExecutionState& exec_st)
 		exec_st.command = f->body;
 		exec_st.variables = new BinarySearchTree;
 
-		for (int i = f->args_num - 1; i >= 0; i--) {
+		for (int i = f->arg.size() - 1; i >= 0; i--) {
 			exec_st.variables->put(f->arg[i].c_str(), int_st.data_stack.top());
 			int_st.data_stack.pop();
 		}
@@ -358,7 +398,7 @@ void ASTFuncCallNode::run(InterpreterState& int_st, ExecutionState& exec_st)
 		return;
 	}
 
-	if (exec_st.cmd_state == f->args_num + 1) // func return
+	if (exec_st.cmd_state == f->arg.size() + 1) // func return
 	{
 		double res = exec_st.variables->get("result");
 		delete exec_st.variables;
@@ -377,6 +417,15 @@ void ASTFuncCallNode::run(InterpreterState& int_st, ExecutionState& exec_st)
 		return;
 	}
 
-	printf("AbstractSyntaxTree : ASTFuncCallNode : Wrong cmd_state\n");
-	exit(-1);
+	calc_unreachable("Wrong cmd_state");
+}
+
+void ASTEmptyNode::run(InterpreterState& int_st, ExecutionState& exec_st)
+{
+	int_st.data_stack.push(0.0); // push in stack useless result
+	exec_st.cmd_state = int_st.op_stack.top();
+	int_st.op_stack.pop();
+	exec_st.command = int_st.command_stack.top();
+	int_st.command_stack.pop();
+	return;
 }

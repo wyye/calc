@@ -1,4 +1,13 @@
 function main()
 {
-	a = 
+	a = 0;
+	b = 2;
+	if ( 1 )
+	{
+		a = 1;
+		if (b == 2) { ++b; }
+		a = 2;
+	}
+	a = 5;
+	result = 5;
 }

@@ -1,0 +1,22 @@
+function main()
+{
+	a = 10;
+	abc = 1.0;
+	while (a > 0) {
+		if (a > 5) {
+			result = 1;
+		}
+		else 
+		{
+			abc++;
+			result = 2;
+		}
+		if (a > 2) {
+		if (a < 5) {
+			result = 666;
+		}
+		}
+		--a;
+	}
+		
+}

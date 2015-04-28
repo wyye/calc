@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "HelpTools.h"
 #include "ParserDriver.h"
 #include "Interpreter.h"
 
@@ -14,25 +15,32 @@ int main(int argc, char** argv)
 	std::string file_name(argv[1]);
 	std::string mode(argv[2]);
 
-
 	ParserDriver driver;
 	if (driver.parse(argv[1])) {
-		std::cout << "Parser error\n";
-		exit(-1);
+		calc_unreachable("Parser error");
 	}
 
-	if (strcmp(argv[2], "-i") == 0) {
-		Interpreter interpreter(&driver.functable);
-		interpreter.run();
-	} else if (strcmp(argv[2], "-c") == 0) {
-		SSAList ssa;
-		driver.functable.get("main")->body->make_ssa(ssa);
-		std::map<std::string, int> in;
-		std::map<std::string, int> out;
-		ssa.make_ssa(in, out);
-		ssa.print();
-	} else {
-		std::cout << "Unknown mode\n";
+	try {
+		if (strcmp(argv[2], "-i") == 0) {
+			Interpreter interpreter(&driver.functable);
+			interpreter.run();
+		} else if (strcmp(argv[2], "-c") == 0) {
+			SSAList ssa;
+			ParserFunc* func = driver.functable.get("main");
+			if (func == NULL)
+				calc_unreachable("Function 'main()' not found");
+			func->body->make_ssa(ssa);
+			std::map<std::string, int> in;
+			std::map<std::string, int> out;
+			ssa.make_ssa(in, out);
+			ssa.print();
+		} else {
+			std::cout << "Unknown mode\n";
+			exit(-1);
+		}
+	}
+		catch (std::logic_error& err) {
+		std::cerr << err.what() << std::endl;
 		exit(-1);
 	}
 		

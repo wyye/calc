@@ -1,5 +1,7 @@
 #include <new>
 
+#include "HelpTools.h"
+
 #include "Interpreter.h"
 #include "AbstractSyntaxTree.h"
 
@@ -8,8 +10,7 @@ Interpreter::Interpreter(HashTable* functable)
 	int_state.functable = functable;
 	ParserFunc* pf = int_state.functable->get("main");
 	if (pf == NULL) {
-		printf("Interpreter : Function 'main()' not found\n");
-		exit(-1);
+		calc_unreachable("Function 'main()' not found");
 	}
 	exec_state.command = new ASTFuncCallNode("main");
 	exec_state.cmd_state = 0;
@@ -26,7 +27,7 @@ double Interpreter::run() {
 	}
 	catch (const std::bad_alloc&)
 	{
-		printf("Interpreter : Out of memory\n");
+		std::cerr << "Interpreter : Out of memory\n";
 		throw;
 	}
 	double ret = int_state.data_stack.top();

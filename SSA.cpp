@@ -68,9 +68,9 @@ void SSAList::make_assign(ISSANode* left, ISSANode* right)
 	add(assign);
 }
 
-void SSAList::make_ternary(ISSANode* condition, SSAList* ternary_true, SSAList* ternary_false)
+void SSAList::make_ternary(int op, ISSANode* condition, SSAList* ternary_true, SSAList* ternary_false)
 {
-	SSATernaryOpNode* ternary = new SSATernaryOpNode(ISSANode::TERNARY);
+	SSATernaryOpNode* ternary = new SSATernaryOpNode(op);
 	ternary->set(condition, ternary_true, ternary_false);
 	add(ternary);
 }

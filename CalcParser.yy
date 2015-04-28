@@ -60,12 +60,14 @@ class ParserDriver;
 	DEC "--"
 	FUNC "function"
 	WHILE "while"
+	IF "if"
+	ELSE "else"
 ;
 
 %token <std::string> NAME "name"
 %token <double> NUMBER "number"
 
-%type <IASTNode*> prim term expr comparison equality ternary assign statement statements
+%type <IASTNode*> prim term expr comparison equality ternary assign statement statements block
 %type <std::list<IASTNode*>*> func_call_args
 %type <std::list<std::string>*> func_def_args
 
@@ -77,17 +79,15 @@ functions:
 	| functions function
 	;
 function:
-	FUNC NAME LPAREN func_def_args RPAREN LCURVEPAREN statements RCURVEPAREN {
+	FUNC NAME LPAREN func_def_args RPAREN block {
 		ParserFunc* pf = new ParserFunc;
 		pf->name = $2;
-		pf->args_num = 0;
 		while (!$4->empty()) {
 			pf->arg.push_back($4->front());
-			++pf->args_num;
 			$4->pop_front();
 		}
 		delete $4;
-		pf->body = $7;
+		pf->body = $6;
 		if (0 == driver.functable.put(pf)) {
 			driver.error("Function appears second time");
 		}
@@ -101,14 +101,32 @@ statements:
 		$$ = parent;
 	}
 	;
+block:
+	LCURVEPAREN RCURVEPAREN {
+		$$ = new ASTEmptyNode();
+	}
+	| LCURVEPAREN statements RCURVEPAREN {
+		$$ = $2;
+	}
+	;
 statement:
 	WHILE LPAREN assign RPAREN statement { 
 		ASTNoRetBinaryOpNode* parent = new ASTNoRetBinaryOpNode(WHILE_CYCLE);
 		parent->set($3, $5);
 		$$ = parent;
 	}
-	| LCURVEPAREN statements RCURVEPAREN { $$ = $2; }
+	| block { $$ = $1; }
 	| assign SEMICOLON { $$ = $1; }
+	| IF LPAREN assign RPAREN block ELSE block { 
+		ASTNoRetTernaryOpNode* parent = new ASTNoRetTernaryOpNode(IF); 
+		parent->set($3, $5, $7);
+		$$ = parent;
+	}
+	| IF LPAREN assign RPAREN block {
+		ASTNoRetTernaryOpNode* parent = new ASTNoRetTernaryOpNode(IF); 
+		parent->set($3, $5, new ASTEmptyNode);
+		$$ = parent;
+	}
 	;
 assign:
 	NAME ASSIGN assign {

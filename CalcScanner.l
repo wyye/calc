@@ -52,6 +52,8 @@ static yy::location loc;
 "--" { return yy::CalcParser::make_DEC(loc); }
 "function" { return yy::CalcParser::make_FUNC(loc); }
 "while" { return yy::CalcParser::make_WHILE(loc); }
+"if" { return yy::CalcParser::make_IF(loc); }
+"else" { return yy::CalcParser::make_ELSE(loc); }
 
 [0-9]*\.?[0-9]+ { return yy::CalcParser::make_NUMBER(atof(yytext), loc); }
 [a-zA-Z_][a-zA-Z0-9_]* { return yy::CalcParser::make_NAME(yytext, loc); }

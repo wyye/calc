@@ -1,0 +1,18 @@
+u_a_0 = 0;
+u_b_0 = 2;
+if ( 1 ) {
+u_a_1 = 1;
+t_0 = u_b_0 == 2;
+if ( t_0 ) {
+u_b_1 = u_b_0 + 1;
+t_1 = u_b_1;
+} else {
+}
+u_b_2 = phi (u_b_1, u_b_0);
+u_a_2 = 2;
+} else {
+}
+u_b_3 = phi (u_b_2, u_b_0);
+u_a_3 = phi (u_a_2, u_a_0);
+u_a_4 = 5;
+u_result_0 = 5;

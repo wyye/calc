@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+#include "HelpTools.h"
 
 class BinarySearchTree
 {
@@ -55,8 +56,11 @@ public:
 			else if (eq < 0) current = current->left;
 			else return current->value;
 		}
-		printf("BinarySearchTree : Record '%s' not found\n", name);
-		exit(-1);
+		std::string temp("Record <");
+		temp.append(name);
+		temp.append("> not found");
+		calc_unreachable(temp);
+		return 0.0;
 	}
 };
 

@@ -9,7 +9,7 @@
 struct ExecutionState
 {
 	IASTNode* command;
-	int cmd_state;
+	unsigned int cmd_state;
 	BinarySearchTree* variables;
 };
 
