@@ -35,6 +35,10 @@ static yy::location loc;
 
 "{" { return yy::CalcParser::make_LCURVEPAREN(loc); }
 "}" { return yy::CalcParser::make_RCURVEPAREN(loc); }
+
+"[" { return yy::CalcParser::make_LSQUAREPAREN(loc); }
+"]" { return yy::CalcParser::make_RSQUAREPAREN(loc); }
+
 "!" { return yy::CalcParser::make_NOT(loc); }
 ":" { return yy::CalcParser::make_COLON(loc); }
 ";" { return yy::CalcParser::make_SEMICOLON(loc); }

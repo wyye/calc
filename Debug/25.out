@@ -1,5 +1,6 @@
 a = 10
 abc = 1
+result = 0
 result = 1
 a = 9
 result = 1

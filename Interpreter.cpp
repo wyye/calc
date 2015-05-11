@@ -5,16 +5,16 @@
 #include "Interpreter.h"
 #include "AbstractSyntaxTree.h"
 
-Interpreter::Interpreter(HashTable* functable)
+Interpreter::Interpreter(HashTable* functable, std::map<unsigned int, std::pair<std::string, unsigned int> >* sym_table)
 {
 	int_state.functable = functable;
+	int_state.sym_table = sym_table;
 	ParserFunc* pf = int_state.functable->get("main");
 	if (pf == NULL) {
 		calc_unreachable("Function 'main()' not found");
 	}
 	exec_state.command = new ASTFuncCallNode("main");
 	exec_state.cmd_state = 0;
-	exec_state.variables = NULL;
 	int_state.execution_end = 0;
 }
 

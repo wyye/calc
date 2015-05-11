@@ -10,8 +10,9 @@ class IASTNode;
 struct ParserFunc
 {
 	std::string name;
-	std::vector<std::string> arg;
+	std::vector<IASTNode*> arg;
 	IASTNode* body;
+
 	ParserFunc() : body(NULL) {}
 	~ParserFunc();
 };

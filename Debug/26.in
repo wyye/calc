@@ -1,20 +1,18 @@
-function abc()
-{
-	result = 5;
-}
-
 function main()
 {
-	result = abc();
-	if (result == 0)
+	c[3] = [99, 88, 77];
+	b = f(c);
+	a[10] = [4, 8, 15, 16, 23, 42];
+	i = 0;
+	result = 0;
+	while ( i < 10)
 	{
+		result = result + a[i++];
 	}
-	if (result == 0)
-	{
-	}
-	else 
-	{
-	}
-	a = 10;
-	while (--a) { {} }
+	b = a[3];
+}
+
+function f(c[3])
+{
+	result = c[1];	
 }

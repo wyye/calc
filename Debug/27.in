@@ -1,0 +1,24 @@
+function abc(k, a[5], p, b[6], e)
+{
+	result = -10;
+	while (k < 5)
+	{
+		result = result + a[k] + b[k];
+		++k;
+	}
+	b[5]++;
+	--b[5];
+	++b[5];
+	b[5]++;
+	result = result * b[5];
+	p = p*e;
+	result = p;
+}
+
+function main()
+{
+	a[5] = [1, 2, 3, 4, 5];
+	b[6] = [10, 9, 8, 7];
+	result = abc(0, a, 1, b, b[2]) - abc(1, a, 2, b, b[3]) + abc(2, a, 3, b, a[3]);
+	c = 1;
+}

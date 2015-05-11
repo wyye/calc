@@ -6,17 +6,26 @@
 #include "ParserFunc.h"
 #include "Stack.h"
 
+#include <map>
+#include <string>
+#include <vector>
+
 struct ExecutionState
 {
 	IASTNode* command;
 	unsigned int cmd_state;
-	BinarySearchTree* variables;
+	std::map<unsigned int, double>* variables;
+	std::map<unsigned int, std::vector<double> >* arrays;
+	double result; // result of last function call, existence of result assignment checked by parser
 };
 
 struct InterpreterState
 {
 	HashTable* functable;
-	Stack<BinarySearchTree*> var_stack;
+	std::map<unsigned int, std::pair<std::string, unsigned int> >* sym_table;
+
+	Stack<std::map<unsigned int, double>*> var_stack;
+	Stack<std::map<unsigned int, std::vector<double> >*> arr_stack;
 	Stack<int> op_stack;
 	Stack<double> data_stack;
 	Stack<IASTNode*> command_stack;
@@ -30,7 +39,7 @@ class Interpreter
 	Interpreter(const Interpreter&);
 	const Interpreter& operator=(const Interpreter&);
 public:
-	Interpreter(HashTable* functable);
+	Interpreter(HashTable* functable, std::map<unsigned int, std::pair<std::string, unsigned int> >* sym_table);
 	~Interpreter();
 	double run();
 };

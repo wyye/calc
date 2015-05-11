@@ -22,7 +22,7 @@ int main(int argc, char** argv)
 
 	try {
 		if (strcmp(argv[2], "-i") == 0) {
-			Interpreter interpreter(&driver.functable);
+			Interpreter interpreter(&driver.functable, &driver.sym_table);
 			interpreter.run();
 		} else if (strcmp(argv[2], "-c") == 0) {
 			SSAList ssa;

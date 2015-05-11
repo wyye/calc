@@ -7,6 +7,7 @@
 #include <cstring>
 #include <string>
 #include <map>
+#include <list>
 
 #include "HashTable.h"
 #include "BinarySearchTree.h"
@@ -21,10 +22,12 @@ enum operation {
 		UNKNOWN, EMPTY,
 		FUNC_CALL,
 		STATEMENTS, WHILE_CYCLE, IF,
-		ASSIGN, TERNARY, EQUALITY, NEQUALITY,
+		ASSIGN,
+		TERNARY, EQUALITY, NEQUALITY,
 		GREATER, GREATER_EQUAL, LESS, LESS_EQUAL,
 		ADD, SUB, MUL, DIV, UNARY_MINUS, NOT,
 		POST_INC, PRE_INC, POST_DEC, PRE_DEC,
+		INDEX,
 		VARIABLE, NUMBER
 	};
 
@@ -116,13 +119,6 @@ public:
 	ISSANode* make_ssa(SSAList& ssa)
 	{
 		int op;
-		if (get_op() == ASSIGN) {
-			op = ISSANode::ASSIGN;
-			ISSANode* left = get(0)->make_ssa(ssa);
-			ISSANode* right = get(1)->make_ssa(ssa);
-			ssa.make_assign(left, right);
-			return get(0)->make_ssa(ssa);
-		}
 		std::string left_name = ssa.new_name();
 		ISSANode* left = ssa.make_var(left_name);
 		ISSANode* right1 = get(0)->make_ssa(ssa);
@@ -148,8 +144,7 @@ public:
 		int op = get_op();
 		std::cout << "(";
 		get(0)->print(0);
-		if (op == ASSIGN) std::cout << "=";
-		else if (op == EQUALITY) std::cout << "==";
+		if (op == EQUALITY) std::cout << "==";
 		else if (op == NEQUALITY) std::cout << "!=";
 		else if (op == GREATER) std::cout << ">";
 		else if (op == GREATER_EQUAL) std::cout << ">=";
@@ -164,7 +159,56 @@ public:
 		}
 		get(1)->print(0);
 		std::cout << ")";
-		if (semicolon) std::cout << ";\n";
+		if (semicolon) std::cout << ";" << std::endl;
+	}
+};
+
+class ASTIndexNode : public ASTBinaryOpNode
+{
+public:
+	ASTIndexNode() : ASTBinaryOpNode(INDEX) {}
+	~ASTIndexNode() {}
+	void run(InterpreterState&, ExecutionState&);
+	ISSANode* make_ssa(SSAList& ssa)
+	{
+		int op;
+		std::string left_name = ssa.new_name();
+		ISSANode* left = ssa.make_var(left_name);
+		ISSANode* right1 = get(0)->make_ssa(ssa);
+		ISSANode* right2 = get(1)->make_ssa(ssa);
+		if (get_op() == INDEX) op = ISSANode::INDEX;
+		else {
+			calc_unreachable("Unknown operation");
+		}
+		ssa.make_binary(op, left, right1, right2);
+		return ssa.make_var(left_name);
+	}
+	void print()
+	{
+		int op = get_op();
+		std::cout << "(";
+		get(0)->print(0);
+		if (op == INDEX) {
+			std::cout << "[";
+			get(1)->print(0);
+			std::cout << "];" << std::endl;
+		}
+		else {
+			calc_unreachable("Unknown operation");
+		}
+	}
+};
+
+class ASTAssignNode : public ASTBinaryOpNode
+{
+public:
+	ASTAssignNode() : ASTBinaryOpNode(ASSIGN) {}
+	~ASTAssignNode() {}
+	void run(InterpreterState&, ExecutionState&);
+	ISSANode* make_ssa(SSAList& ssa);
+	virtual void print(int semicolon)
+	{
+		calc_unreachable("Not implemented");
 	}
 };
 
@@ -228,24 +272,22 @@ public:
 
 class ASTLeafVar : public IASTNode
 {
-	std::string m_name;
+	unsigned int m_id;
 
 public:
-	ASTLeafVar(const char* name) : IASTNode(VARIABLE), m_name(name) {}
+	ASTLeafVar(unsigned int id) : IASTNode(VARIABLE), m_id(id) {}
 	~ASTLeafVar() {}
-	void get(char* name, int n) const
-	{
-		strncpy(name, m_name.c_str(), n-1);
-		name[n-1] = '\0';
-	}
-	void set(char* name) {
-		m_name = name;
-	}
+	unsigned int get() const { return m_id; }
+	void set(unsigned int id) { m_id = id; }
 	void run(InterpreterState& int_st, ExecutionState& exec_st)
 	{
 		if (exec_st.cmd_state == 0) // call to child 1
 		{
-			double var = exec_st.variables->get(m_name.c_str());
+			if (exec_st.variables->count(m_id) == 0) {
+				if (int_st.sym_table->find(m_id) == int_st.sym_table->end()) calc_unreachable("Variable id not found");
+				calc_unreachable("Variable '" + int_st.sym_table->find(m_id)->second.first + "' not initialized");
+			}
+			double var = (*exec_st.variables)[m_id];
 			int_st.data_stack.push(var);
 			exec_st.cmd_state = int_st.op_stack.top();
 			int_st.op_stack.pop();
@@ -258,32 +300,38 @@ public:
 	}
 	ISSANode* make_ssa(SSAList& ssa)
 	{
+		//TODO
+		calc_unreachable("Not implemented");
+		return NULL;
+		/*
 		char* buf = new char[strlen(m_name.c_str()) + 3];
 		sprintf(buf, "u_%s", m_name.c_str());
 		ISSANode* var = ssa.make_var(buf);
 		delete[] buf;
 		return var;
+		*/
 	}
 	virtual void print(int semicolon)
 	{
-		int op = get_op();
+		calc_unreachable("Not implemented");
+		/*int op = get_op();
 		if (op != VARIABLE) {
 			calc_unreachable("Unknown operation");
 		}
 		std::cout << m_name;
-		if (semicolon) std::cout << ";\n";
+		if (semicolon) std::cout << ";\n";*/
 	}
 };
 
 class ASTIncrOpNode : public IASTNode
 {
-	ASTLeafVar* m_child;
+	IASTNode* m_child;
 
 public:
 	ASTIncrOpNode(int operation) : IASTNode(operation), m_child(NULL) {}
 	~ASTIncrOpNode() { if (m_child != NULL) delete(m_child); }
-	void set(ASTLeafVar* node) { m_child = node; }
-	ASTLeafVar* get() const { return m_child; }
+	void set(IASTNode* node) { m_child = node; }
+	IASTNode* get() const { return m_child; }
 	void run(InterpreterState&, ExecutionState&);
 	ISSANode* make_ssa(SSAList& ssa)
 	{
@@ -476,5 +524,7 @@ public:
 		if (semicolon) std::cout << ";\n";
 	}
 };
+
+
 
 #endif

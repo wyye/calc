@@ -47,7 +47,7 @@ public:
 		(*current)->value = val;
 		return 1;
 	}
-	double get(const char* name)
+	double& get(const char* name)
 	{
 		Node* current = root;
 		while (current != NULL) {
@@ -56,11 +56,14 @@ public:
 			else if (eq < 0) current = current->left;
 			else return current->value;
 		}
-		std::string temp("Record <");
+		std::string temp("Record '");
 		temp.append(name);
-		temp.append("> not found");
+		temp.append("' not found");
 		calc_unreachable(temp);
-		return 0.0;
+		// disable warning message
+		exit(-1);
+		double* useless = new double;
+		return *useless;
 	}
 };
 

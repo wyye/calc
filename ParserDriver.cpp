@@ -1,6 +1,8 @@
 #include "ParserDriver.h"
 #include "CalcParser.tab.hh"
 
+unsigned int ParserDriver::last_index = 0;
+
 int ParserDriver::parse (const std::string &f)
 {
 	file = f;
